@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLE Hit Pad Grid</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #dbe3ee;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.12);
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --ok: #16a34a;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 24px 24px 12px;
+      border-bottom: 1px solid rgba(219, 227, 238, 0.65);
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 { font-size: 30px; }
+    h2 { font-size: 20px; }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: var(--accent-soft);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      min-height: 150px;
+    }
+
+    .cell.strongest {
+      outline: 3px solid #111827;
+      transform: scale(1.02);
+    }
+
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cell-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .badge {
+      font-size: 12px;
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 8px;
+    }
+
+    .cell-value {
+      margin-top: 22px;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .progress {
+      margin-top: 14px;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.12s ease;
+    }
+
+    .percent {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stack {
+      display: grid;
+      gap: 24px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .pill.connected {
+      background: rgba(22, 163, 74, 0.12);
+      color: var(--ok);
+    }
+
+    .info-box, .mono-box, .error-box {
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .info-box, .mono-box {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .mono-box {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .error-box {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    .stat-big {
+      font-size: 30px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="layout">
+      <section class="card">
+        <div class="card-header">
+          <div class="title-row">
+            <div>
+              <h1>Hit Pad BLE Grid</h1>
+              <p class="subtitle">Live 2×5 sensor view from your ESP32 BLE hit pad.</p>
+            </div>
+            <div class="button-row">
+              <button id="connectBtn" class="primary">Connect BLE</button>
+              <button id="disconnectBtn" disabled>Disconnect</button>
+              <button id="resetBtn">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="grid" class="grid"></div>
+        </div>
+      </section>
+
+      <aside class="stack">
+        <section class="card">
+          <div class="card-header"><h2>Connection</h2></div>
+          <div class="card-body">
+            <div class="status-row">
+              <span id="connectionPill" class="pill">Disconnected</span>
+              <span id="statusText">Disconnected</span>
+            </div>
+            <div id="errorBox" class="error-box" style="display:none; margin-top:14px;"></div>
+            <div class="info-box" style="margin-top:14px;">
+              Use Chrome or Edge with Web Bluetooth. Connect to the device named <strong>ESP32_HIT_PAD_BLE</strong>.
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2>Live Stats</h2></div>
+          <div class="card-body stack">
+            <div class="info-box">
+              <div>Strongest zone</div>
+              <div id="strongestZone" class="stat-big">None</div>
+            </div>
+            <div class="info-box">
+              <div>Last hit packet</div>
+              <div id="lastHit" class="stat-big" style="font-size:20px;">None</div>
+            </div>
+            <div class="mono-box">
+              <div style="font-family: Arial, Helvetica, sans-serif; font-size:14px; margin-bottom:8px;">Last raw BLE packet</div>
+              <div id="lastPacket">No packets yet</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><h2>Expected BLE packets</h2></div>
+          <div class="card-body stack">
+            <div class="mono-box">CSV,0,80,1450,120,0,0,30,650,0,0</div>
+            <div class="mono-box">HIT,S3,1450</div>
+            <div class="info-box">The grid updates from the CSV line. The strongest zone updates from the highest value in the latest packet.</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+
+    const labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'];
+    let values = new Array(10).fill(0);
+
+    let characteristic = null;
+    let device = null;
+    let buffer = '';
+    const decoder = new TextDecoder('utf-8');
+
+    const gridEl = document.getElementById('grid');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const connectionPill = document.getElementById('connectionPill');
+    const statusText = document.getElementById('statusText');
+    const strongestZone = document.getElementById('strongestZone');
+    const lastHit = document.getElementById('lastHit');
+    const lastPacket = document.getElementById('lastPacket');
+    const errorBox = document.getElementById('errorBox');
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.textContent = '';
+      errorBox.style.display = 'none';
+    }
+
+    function setConnectionState(connected, text) {
+      connectionPill.textContent = connected ? 'Connected' : 'Disconnected';
+      connectionPill.className = connected ? 'pill connected' : 'pill';
+      statusText.textContent = text;
+      connectBtn.disabled = connected;
+      disconnectBtn.disabled = !connected;
+    }
+
+    function strongestIndex() {
+      let idx = 0;
+      for (let i = 1; i < values.length; i++) {
+        if (values[i] > values[idx]) idx = i;
+      }
+      return idx;
+    }
+
+    function maxValue() {
+      return Math.max(1000, ...values);
+    }
+
+    function percent(value) {
+      return Math.max(0, Math.min(100, (value / maxValue()) * 100));
+    }
+
+    function renderGrid() {
+      const maxIdx = strongestIndex();
+      gridEl.innerHTML = '';
+
+      values.forEach((value, i) => {
+        const p = percent(value);
+        const strongest = value > 0 && i === maxIdx;
+        const opacity = Math.max(0.12, p / 100);
+
+        const cell = document.createElement('div');
+        cell.className = strongest ? 'cell strongest' : 'cell';
+        cell.style.background = `rgba(59, 130, 246, ${opacity})`;
+
+        cell.innerHTML = `
+          <div class="cell-top">
+            <div class="cell-label">${labels[i]}</div>
+            ${strongest ? '<div class="badge">Strongest</div>' : ''}
+          </div>
+          <div class="cell-value">${value}</div>
+          <div class="progress"><div class="progress-bar" style="width:${p}%"></div></div>
+          <div class="percent">${Math.round(p)}%</div>
+        `;
+
+        gridEl.appendChild(cell);
+      });
+
+      strongestZone.textContent = values[maxIdx] > 0 ? labels[maxIdx] : 'None';
+    }
+
+    function handlePacket(line) {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      lastPacket.textContent = trimmed;
+
+      if (trimmed.startsWith('CSV,')) {
+        const parts = trimmed.split(',').slice(1).map(v => Number(v.trim()));
+        if (parts.length === 10 && parts.every(Number.isFinite)) {
+          values = parts;
+          renderGrid();
+        }
+        return;
+      }
+
+      if (trimmed.startsWith('HIT,')) {
+        const [, zone, value] = trimmed.split(',');
+        lastHit.textContent = `${zone} (${value})`;
+      }
+    }
+
+    function onNotification(event) {
+      const chunk = decoder.decode(event.target.value);
+      buffer += chunk;
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || '';
+      lines.forEach(handlePacket);
+    }
+
+    async function connectBLE() {
+      clearError();
+      try {
+        if (!navigator.bluetooth) {
+          throw new Error('Web Bluetooth is not available in this browser. Use Chrome or Edge on desktop or Android.');
+        }
+
+        setConnectionState(false, 'Requesting BLE device...');
+        device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'ESP32_HIT_PAD' }],
+          optionalServices: [SERVICE_UUID]
+        });
+
+        device.addEventListener('gattserverdisconnected', () => {
+          setConnectionState(false, 'Disconnected');
+        });
+
+        setConnectionState(false, 'Connecting...');
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        characteristic = await service.getCharacteristic(TX_UUID);
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', onNotification);
+
+        setConnectionState(true, `Connected to ${device.name || 'ESP32'}`);
+      } catch (err) {
+        setConnectionState(false, 'Disconnected');
+        showError(err && err.message ? err.message : 'Connection failed.');
+      }
+    }
+
+    async function disconnectBLE() {
+      try {
+        if (device && device.gatt && device.gatt.connected) {
+          device.gatt.disconnect();
+        }
+      } finally {
+        setConnectionState(false, 'Disconnected');
+      }
+    }
+
+    function resetGrid() {
+      values = new Array(10).fill(0);
+      lastHit.textContent = 'None';
+      lastPacket.textContent = 'No packets yet';
+      clearError();
+      renderGrid();
+    }
+
+    connectBtn.addEventListener('click', connectBLE);
+    disconnectBtn.addEventListener('click', disconnectBLE);
+    resetBtn.addEventListener('click', resetGrid);
+
+    renderGrid();
+  </script>
+</body>
+</html>
