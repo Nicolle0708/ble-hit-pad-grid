@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BLE Hit Pad Grid</title>
+  <title>Hit Pad BLE Grid</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -22,8 +22,7 @@
 
     html, body {
       margin: 0;
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
@@ -32,378 +31,6 @@
     body { padding: 12px; }
 
     .app {
-      height: calc(100vh - 24px);
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 12px;
-    }
-
-    .topbar {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .title-wrap h1, .title-wrap p { margin: 0; }
-    .title-wrap h1 { font-size: 24px; }
-    .title-wrap p { margin-top: 4px; font-size: 13px; color: var(--muted); }
-
-    .rightbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 700;
-      background: #e2e8f0;
-      color: #334155;
-    }
-
-    .status-pill.connected {
-      background: rgba(22, 163, 74, 0.12);
-      color: #15803d;
-    }
-
-    button {
-      border: 1px solid var(--line);
-      background: white;
-      color: var(--text);
-      border-radius: 14px;
-      padding: 10px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-
-    button.primary {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .main {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 16px;
-      min-height: 0;
-      display: grid;
-      grid-template-columns: 1fr 240px;
-      gap: 16px;
-      align-items: stretch;
-    }
-
-    .square-wrap {
-      min-height: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .square {
-      width: min(78vh, 100%, 700px);
-      aspect-ratio: 1 / 1;
-      border: 2px solid var(--line);
-      border-radius: 22px;
-      padding: 12px;
-      background: #f8fafc;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .cell {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--accent-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(18px, 2.2vw, 28px);
-      font-weight: 800;
-      color: #1e293b;
-      transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
-    }
-
-    .cell.active {
-      background: var(--hit);
-      color: white;
-      transform: scale(1.02);
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
-    }
-
-    .side {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 12px;
-      min-height: 0;
-    }
-
-    .side-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #f8fafc;
-      padding: 12px;
-    }
-
-    .side-card h2, .side-card p { margin: 0; }
-    .side-card h2 { font-size: 16px; margin-bottom: 8px; }
-    .small { font-size: 13px; color: var(--muted); line-height: 1.4; }
-    .big { font-size: 26px; font-weight: 800; }
-    .mono { font-family: Consolas, Monaco, monospace; font-size: 12px; overflow-wrap: anywhere; }
-    .error-box {
-      display: none;
-      background: #fef2f2;
-      color: #b91c1c;
-      border-radius: 12px;
-      padding: 10px;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    @media (max-width: 900px) {
-      html, body { overflow: auto; }
-      .app { height: auto; min-height: calc(100vh - 24px); }
-      .main { grid-template-columns: 1fr; }
-      .square { width: min(90vw, 700px); }
-      .side { grid-template-rows: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <header class="topbar">
-      <div class="title-wrap">
-        <h1>Hit Pad BLE Grid</h1>
-        <p>10 sections inside one square. A section lights up when it is hit.</p>
-      </div>
-      <div class="rightbar">
-        <div id="connectionPill" class="status-pill">Disconnected</div>
-        <button id="connectBtn" class="primary">Connect BLE</button>
-        <button id="disconnectBtn" disabled>Disconnect</button>
-        <button id="resetBtn">Reset</button>
-      </div>
-    </header>
-
-    <main class="main">
-      <div class="square-wrap">
-        <div id="square" class="square"></div>
-      </div>
-
-      <aside class="side">
-        <div class="side-card">
-          <h2>Status</h2>
-          <div id="errorBox" class="error-box"></div>
-          <p id="statusText" class="small">Disconnected</p>
-        </div>
-
-        <div class="side-card">
-          <h2>Last hit</h2>
-          <div id="lastHit" class="big">None</div>
-        </div>
-
-        <div class="side-card">
-          <h2>Last packet</h2>
-          <div id="lastPacket" class="mono">No packets yet</div>
-        </div>
-      </aside>
-    </main>
-  </div>
-
-  <script>
-    const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-    const TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
-    const labels = ['S10','S9','S8','S7','S6','S5','S4','S3','S2','S1'];
-
-    let device = null;
-    let values = new Array(10).fill(0);
-    let clearTimer = null;
-    const decoder = new TextDecoder('utf-8');
-
-    const square = document.getElementById('square');
-    const connectBtn = document.getElementById('connectBtn');
-    const disconnectBtn = document.getElementById('disconnectBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const connectionPill = document.getElementById('connectionPill');
-    const statusText = document.getElementById('statusText');
-    const lastHit = document.getElementById('lastHit');
-    const lastPacket = document.getElementById('lastPacket');
-    const errorBox = document.getElementById('errorBox');
-
-    function showError(message) {
-      errorBox.textContent = message;
-      errorBox.style.display = 'block';
-    }
-
-    function clearError() {
-      errorBox.textContent = '';
-      errorBox.style.display = 'none';
-    }
-
-    function setConnectionState(connected, text) {
-      connectionPill.textContent = connected ? 'Connected' : 'Disconnected';
-      connectionPill.className = connected ? 'status-pill connected' : 'status-pill';
-      statusText.textContent = text;
-      connectBtn.disabled = connected;
-      disconnectBtn.disabled = !connected;
-    }
-
-    function buildSquare() {
-      square.innerHTML = '';
-      labels.forEach((label, i) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.id = `cell-${i}`;
-        cell.textContent = label;
-        square.appendChild(cell);
-      });
-    }
-
-    function clearActiveCells() {
-      for (let i = 0; i < 10; i++) {
-        document.getElementById(`cell-${i}`)?.classList.remove('active');
-      }
-    }
-
-    function flashStrongestCell(index) {
-      clearActiveCells();
-      const cell = document.getElementById(`cell-${index}`);
-      if (cell) cell.classList.add('active');
-
-      if (clearTimer) clearTimeout(clearTimer);
-      clearTimer = setTimeout(() => {
-        clearActiveCells();
-      }, 350);
-    }
-
-    function handlePacket(packet) {
-      const trimmed = packet.trim();
-      if (!trimmed) return;
-      lastPacket.textContent = trimmed;
-
-      if (trimmed.startsWith('CSV,')) {
-        const parts = trimmed.split(',').slice(1).map(v => Number(v.trim()));
-        if (parts.length === 10 && parts.every(Number.isFinite)) {
-          values = parts;
-        }
-        return;
-      }
-
-      if (trimmed.startsWith('HIT,')) {
-        const [, zone] = trimmed.split(',');
-        lastHit.textContent = zone;
-
-        const sensorOrder = ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10'];
-        const displayOrder = ['S10','S9','S8','S7','S6','S5','S4','S3','S2','S1'];
-        const hitIndex = displayOrder.indexOf(zone);
-        if (hitIndex >= 0) {
-          flashStrongestCell(hitIndex);
-        } else {
-          const fallbackIndex = sensorOrder.indexOf(zone);
-          if (fallbackIndex >= 0) {
-            const mapped = displayOrder.indexOf(sensorOrder[fallbackIndex]);
-            if (mapped >= 0) flashStrongestCell(mapped);
-          }
-        }
-      }
-    }
-
-    function onNotification(event) {
-      const packet = decoder.decode(event.target.value).trim();
-      if (packet) handlePacket(packet);
-    }
-
-    async function connectBLE() {
-      clearError();
-      try {
-        if (!navigator.bluetooth) {
-          throw new Error('Web Bluetooth is not available in this browser. Use Chrome or Edge on desktop or Android.');
-        }
-
-        setConnectionState(false, 'Requesting BLE device...');
-        device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'ESP32_HIT_PAD' }],
-          optionalServices: [SERVICE_UUID]
-        });
-
-        device.addEventListener('gattserverdisconnected', () => {
-          setConnectionState(false, 'Disconnected');
-        });
-
-        setConnectionState(false, 'Connecting...');
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(SERVICE_UUID);
-        const characteristic = await service.getCharacteristic(TX_UUID);
-        await characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', onNotification);
-
-        setConnectionState(true, `Connected to ${device.name || 'ESP32'}`);
-      } catch (err) {
-        setConnectionState(false, 'Disconnected');
-        showError(err && err.message ? err.message : 'Connection failed.');
-      }
-    }
-
-    async function disconnectBLE() {
-      try {
-        if (device && device.gatt && device.gatt.connected) {<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BLE Hit Pad Grid</title>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #475569;
-      --line: #dbe3ee;
-      --accent: #2563eb;
-      --accent-soft: #dbeafe;
-      --hit: #2563eb;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --radius: 18px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    body { padding: 12px; }
-
-    .app {
-      height: calc(100vh - 24px);
       max-width: 1200px;
       margin: 0 auto;
       display: grid;
@@ -482,6 +109,10 @@
       gap: 16px;
     }
 
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
     .square-wrap {
       display: flex;
       align-items: center;
@@ -511,6 +142,8 @@
       justify-content: center;
       gap: 6px;
       font-weight: 800;
+      min-height: 100px;
+      transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
     }
 
     .cell.active {
@@ -522,7 +155,62 @@
     .cell-label { font-size: 18px; }
     .cell-count { font-size: 26px; }
     .cell-percent { font-size: 12px; color: var(--muted); }
+    .cell.active .cell-percent { color: rgba(255,255,255,0.9); }
 
+    .sidepanel {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .panel-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .panel-card h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+
+    .timer-display {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .button-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -544,17 +232,26 @@
         <div id="square" class="square"></div>
       </div>
 
-      <div>
-        <h2>Timer</h2>
-        <div id="timerDisplay">60</div>
-        <input id="timerInput" type="number" value="60" />
-        <br><br>
-        <button id="startBtn">Start</button>
-        <button id="stopBtn">Stop</button>
-        <button id="resetBtn">Reset</button>
-        <br><br>
-        <div>Total hits: <span id="totalHits">0</span></div>
-      </div>
+      <aside class="sidepanel">
+        <div class="panel-card">
+          <h2>Timer</h2>
+          <div id="timerDisplay" class="timer-display">60</div>
+          <input id="timerInput" type="number" min="1" value="60" />
+          <div class="button-stack">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn">Stop</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h2>Session</h2>
+          <div class="meta">Total hits: <strong id="totalHits">0</strong></div>
+          <div class="meta" style="margin-top:8px;">Last hit: <strong id="lastHit">None</strong></div>
+          <div class="meta" style="margin-top:8px;">Last packet: <span id="lastPacket">No packets yet</span></div>
+          <div id="errorBox" class="error" style="margin-top:12px;"></div>
+        </div>
+      </aside>
     </main>
   </div>
 
@@ -567,8 +264,38 @@
     let totalHitCount = 0;
     let sessionRunning = false;
     let timeRemaining = 60;
-    let interval;
+    let intervalId = null;
+    let bleDevice = null;
+    let bleCharacteristic = null;
+    let buffer = '';
     const decoder = new TextDecoder();
+
+    const connectionPill = document.getElementById('connectionPill');
+    const connectBtn = document.getElementById('connectBtn');
+    const disconnectBtn = document.getElementById('disconnectBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerInput = document.getElementById('timerInput');
+    const totalHitsEl = document.getElementById('totalHits');
+    const lastHitEl = document.getElementById('lastHit');
+    const lastPacketEl = document.getElementById('lastPacket');
+    const errorBox = document.getElementById('errorBox');
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.textContent = '';
+      errorBox.style.display = 'none';
+    }
+
+    function setConnectionState(connected) {
+      connectionPill.textContent = connected ? 'Connected' : 'Disconnected';
+      connectionPill.className = connected ? 'status-pill connected' : 'status-pill';
+      connectBtn.disabled = connected;
+      disconnectBtn.disabled = !connected;
+    }
 
     function buildGrid() {
       const grid = document.getElementById('square');
@@ -576,112 +303,156 @@
       labels.forEach((label, i) => {
         const cell = document.createElement('div');
         cell.className = 'cell';
-        cell.id = 'cell-'+i;
-        cell.innerHTML = `<div class='cell-label'>${label}</div>
-                          <div class='cell-count' id='count-${i}'>0</div>
-                          <div class='cell-percent' id='percent-${i}'>0%</div>`;
+        cell.id = 'cell-' + i;
+        cell.innerHTML = `
+          <div class="cell-label">${label}</div>
+          <div class="cell-count" id="count-${i}">0</div>
+          <div class="cell-percent" id="percent-${i}">0%</div>
+        `;
         grid.appendChild(cell);
       });
     }
 
     function updateUI() {
-      for (let i=0;i<10;i++) {
-        document.getElementById(`count-${i}`).textContent = hitCounts[i];
-        const percent = totalHitCount === 0 ? 0 : Math.round((hitCounts[i]/totalHitCount)*100);
-        document.getElementById(`percent-${i}`).textContent = percent + '%';
+      for (let i = 0; i < 10; i++) {
+        const countEl = document.getElementById('count-' + i);
+        const percentEl = document.getElementById('percent-' + i);
+        if (!countEl || !percentEl) continue;
+        countEl.textContent = hitCounts[i];
+        const percent = totalHitCount === 0 ? 0 : Math.round((hitCounts[i] / totalHitCount) * 100);
+        percentEl.textContent = percent + '%';
       }
-      document.getElementById('totalHits').textContent = totalHitCount;
+      totalHitsEl.textContent = totalHitCount;
     }
 
-    function flash(i) {
-      const cell = document.getElementById('cell-'+i);
+    function flash(index) {
+      const cell = document.getElementById('cell-' + index);
+      if (!cell) return;
       cell.classList.add('active');
-      setTimeout(()=>cell.classList.remove('active'),200);
+      setTimeout(() => cell.classList.remove('active'), 200);
     }
 
     function handlePacket(packet) {
+      const trimmed = packet.trim();
+      if (!trimmed) return;
+      lastPacketEl.textContent = trimmed;
+
       if (!sessionRunning) return;
-      if (packet.startsWith('HIT,')) {
-        const zone = packet.split(',')[1];
+
+      if (trimmed.startsWith('HIT,')) {
+        const parts = trimmed.split(',');
+        const zone = parts[1];
         const index = labels.indexOf(zone);
         if (index >= 0) {
           hitCounts[index]++;
           totalHitCount++;
+          lastHitEl.textContent = zone;
           updateUI();
           flash(index);
         }
       }
     }
 
-    function onNotification(e) {
-      const p = decoder.decode(e.target.value).trim();
-      if (p) handlePacket(p);
+    function onNotification(event) {
+      const chunk = decoder.decode(event.target.value);
+      buffer += chunk;
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || '';
+      lines.forEach(handlePacket);
     }
 
     async function connectBLE() {
-      const device = await navigator.bluetooth.requestDevice({
-        filters:[{namePrefix:'ESP32'}],
-        optionalServices:[SERVICE_UUID]
-      });
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(SERVICE_UUID);
-      const char = await service.getCharacteristic(TX_UUID);
-      await char.startNotifications();
-      char.addEventListener('characteristicvaluechanged', onNotification);
-      document.getElementById('connectionPill').textContent='Connected';
-    }
-
-    document.getElementById('connectBtn').onclick = connectBLE;
-
-    document.getElementById('startBtn').onclick = ()=>{
-      sessionRunning = true;
-      timeRemaining = parseInt(timerInput.value);
-      interval = setInterval(()=>{
-        timeRemaining--;
-        document.getElementById('timerDisplay').textContent=timeRemaining;
-        if(timeRemaining<=0){sessionRunning=false;clearInterval(interval);} 
-      },1000);
-    };
-
-    document.getElementById('stopBtn').onclick = ()=>{
-      sessionRunning=false;
-      clearInterval(interval);
-    };
-
-    document.getElementById('resetBtn').onclick = ()=>{
-      sessionRunning=false;
-      clearInterval(interval);
-      hitCounts.fill(0);
-      totalHitCount=0;
-      updateUI();
-    };
-
-    buildGrid();
-    updateUI();
-  </script>
-</body>
-</html>
-
-          device.gatt.disconnect();
+      clearError();
+      try {
+        if (!navigator.bluetooth) {
+          throw new Error('Web Bluetooth is not available in this browser. Use Chrome or Edge on Android or desktop.');
         }
-      } finally {
-        setConnectionState(false, 'Disconnected');
+
+        bleDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'ESP32_HIT_PAD' }, { namePrefix: 'ESP32' }],
+          optionalServices: [SERVICE_UUID]
+        });
+
+        bleDevice.addEventListener('gattserverdisconnected', () => {
+          setConnectionState(false);
+          bleCharacteristic = null;
+        });
+
+        const server = await bleDevice.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        bleCharacteristic = await service.getCharacteristic(TX_UUID);
+        await bleCharacteristic.startNotifications();
+        bleCharacteristic.addEventListener('characteristicvaluechanged', onNotification);
+        setConnectionState(true);
+      } catch (error) {
+        setConnectionState(false);
+        showError(error && error.message ? error.message : 'BLE connection failed.');
       }
     }
 
-    function resetGrid() {
-      values = new Array(10).fill(0);
-      lastHit.textContent = 'None';
-      lastPacket.textContent = 'No packets yet';
+    function disconnectBLE() {
+      try {
+        if (bleCharacteristic) {
+          bleCharacteristic.removeEventListener('characteristicvaluechanged', onNotification);
+        }
+        if (bleDevice && bleDevice.gatt && bleDevice.gatt.connected) {
+          bleDevice.gatt.disconnect();
+        }
+      } catch (error) {
+        showError(error && error.message ? error.message : 'BLE disconnect failed.');
+      } finally {
+        bleCharacteristic = null;
+        setConnectionState(false);
+      }
+    }
+
+    function startSession() {
+      clearInterval(intervalId);
+      timeRemaining = parseInt(timerInput.value, 10) || 60;
+      timerDisplay.textContent = timeRemaining;
+      sessionRunning = true;
+      intervalId = setInterval(() => {
+        timeRemaining--;
+        timerDisplay.textContent = timeRemaining;
+        if (timeRemaining <= 0) {
+          sessionRunning = false;
+          clearInterval(intervalId);
+        }
+      }, 1000);
+    }
+
+    function stopSession() {
+      sessionRunning = false;
+      clearInterval(intervalId);
+    }
+
+    function resetSession() {
+      sessionRunning = false;
+      clearInterval(intervalId);
+      timeRemaining = parseInt(timerInput.value, 10) || 60;
+      timerDisplay.textContent = timeRemaining;
+      hitCounts.fill(0);
+      totalHitCount = 0;
+      lastHitEl.textContent = 'None';
+      lastPacketEl.textContent = 'No packets yet';
       clearError();
-      clearActiveCells();
+      updateUI();
+      for (let i = 0; i < 10; i++) {
+        const cell = document.getElementById('cell-' + i);
+        if (cell) cell.classList.remove('active');
+      }
     }
 
     connectBtn.addEventListener('click', connectBLE);
     disconnectBtn.addEventListener('click', disconnectBLE);
-    resetBtn.addEventListener('click', resetGrid);
+    document.getElementById('startBtn').addEventListener('click', startSession);
+    document.getElementById('stopBtn').addEventListener('click', stopSession);
+    document.getElementById('resetBtn').addEventListener('click', resetSession);
 
-    buildSquare();
+    buildGrid();
+    resetSession();
+    setConnectionState(false);
   </script>
 </body>
 </html>
+
