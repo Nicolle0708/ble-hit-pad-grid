@@ -11,79 +11,78 @@
       --text: #0f172a;
       --muted: #475569;
       --line: #dbe3ee;
-      --accent: #3b82f6;
-      --accent-soft: rgba(59, 130, 246, 0.12);
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.12);
       --danger-bg: #fef2f2;
       --danger-text: #b91c1c;
       --ok: #16a34a;
       --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --radius: 20px;
+      --radius: 18px;
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
+      height: 100%;
+      overflow: hidden;
       font-family: Arial, Helvetica, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
 
-    .page {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
+    body {
+      padding: 12px;
     }
 
-    .layout {
+    .app {
+      height: calc(100vh - 24px);
       display: grid;
-      grid-template-columns: 1.25fr 0.75fr;
-      gap: 24px;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
-    @media (max-width: 960px) {
-      .layout { grid-template-columns: 1fr; }
-    }
-
-    .card {
+    .topbar {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow: hidden;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1.2fr auto auto auto;
+      gap: 12px;
+      align-items: center;
     }
 
-    .card-header {
-      padding: 24px 24px 12px;
-      border-bottom: 1px solid rgba(219, 227, 238, 0.65);
+    .title-wrap h1, .title-wrap p, h2, p { margin: 0; }
+    .title-wrap h1 { font-size: 24px; }
+    .title-wrap p { margin-top: 4px; font-size: 13px; color: var(--muted); }
+
+    .status-pill {
+      justify-self: start;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+      white-space: nowrap;
     }
 
-    .card-body {
-      padding: 24px;
-    }
-
-    .title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    h1, h2, h3, p { margin: 0; }
-
-    h1 { font-size: 30px; }
-    h2 { font-size: 20px; }
-
-    .subtitle {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 14px;
+    .status-pill.connected {
+      background: rgba(22, 163, 74, 0.12);
+      color: var(--ok);
     }
 
     .button-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      justify-self: end;
       flex-wrap: wrap;
     }
 
@@ -91,8 +90,8 @@
       border: 1px solid var(--line);
       background: white;
       color: var(--text);
-      border-radius: 16px;
-      padding: 12px 16px;
+      border-radius: 14px;
+      padding: 10px 14px;
       font-size: 14px;
       cursor: pointer;
       transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
@@ -110,37 +109,53 @@
       border-color: var(--accent);
     }
 
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .main {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 12px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 0;
+    }
+
+    .grid-panel {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      padding: 14px;
+      gap: 12px;
     }
 
     .grid {
+      min-height: 0;
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 520px) {
-      .grid { grid-template-columns: 1fr; }
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .cell {
       border: 1px solid var(--line);
       border-radius: 18px;
-      padding: 16px;
+      padding: 14px;
       background: var(--accent-soft);
       transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-      min-height: 150px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .cell.strongest {
       outline: 3px solid #111827;
-      transform: scale(1.02);
+      transform: scale(1.01);
     }
 
     .cell-top {
@@ -157,26 +172,28 @@
     }
 
     .badge {
-      font-size: 12px;
+      font-size: 11px;
       background: #111827;
       color: white;
       border-radius: 999px;
       padding: 4px 8px;
+      white-space: nowrap;
     }
 
     .cell-value {
-      margin-top: 22px;
-      font-size: 34px;
+      margin-top: 10px;
+      font-size: clamp(24px, 3vw, 42px);
       font-weight: 800;
       letter-spacing: -0.03em;
+      line-height: 1;
     }
 
     .progress {
-      margin-top: 14px;
+      margin-top: 10px;
       width: 100%;
       height: 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.78);
       overflow: hidden;
       border: 1px solid rgba(148, 163, 184, 0.25);
     }
@@ -189,136 +206,164 @@
     }
 
     .percent {
-      margin-top: 8px;
+      margin-top: 6px;
       font-size: 12px;
       color: var(--muted);
     }
 
-    .stack {
+    .bottom-stats {
       display: grid;
-      gap: 24px;
-    }
-
-    .status-row {
-      display: flex;
-      align-items: center;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 14px;
     }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 6px 10px;
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fafc;
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .mini-label {
       font-size: 12px;
-      font-weight: 700;
-      background: #e2e8f0;
-      color: #334155;
+      color: var(--muted);
+      margin-bottom: 6px;
     }
 
-    .pill.connected {
-      background: rgba(22, 163, 74, 0.12);
-      color: var(--ok);
+    .mini-value {
+      font-size: 24px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .info-box, .mono-box, .error-box {
-      border-radius: 16px;
+    .mini-mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .side {
       padding: 14px;
-      font-size: 14px;
-      line-height: 1.45;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 10px;
+      min-height: 0;
     }
 
-    .info-box, .mono-box {
-      background: #f1f5f9;
-      color: #334155;
+    .side-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fafc;
+      padding: 12px;
+    }
+
+    .side-card h2 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .error-box {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+      display: none;
     }
 
     .mono-box {
       font-family: Consolas, Monaco, monospace;
       font-size: 12px;
       overflow-wrap: anywhere;
+      line-height: 1.4;
+      background: #eef2ff;
+      border-radius: 12px;
+      padding: 10px;
     }
 
-    .error-box {
-      background: var(--danger-bg);
-      color: var(--danger-text);
+    @media (max-width: 1100px) {
+      .main { grid-template-columns: 1fr; }
+      .side { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; }
+      html, body { overflow: auto; }
+      .app { height: auto; min-height: calc(100vh - 24px); }
     }
 
-    .stat-big {
-      font-size: 30px;
-      font-weight: 800;
-      margin-top: 6px;
+    @media (max-width: 900px) {
+      .topbar { grid-template-columns: 1fr; }
+      .button-row { justify-self: start; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; }
+      .bottom-stats { grid-template-columns: 1fr; }
+      .side { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="layout">
-      <section class="card">
-        <div class="card-header">
-          <div class="title-row">
-            <div>
-              <h1>Hit Pad BLE Grid</h1>
-              <p class="subtitle">Live 2×5 sensor view from your ESP32 BLE hit pad.</p>
-            </div>
-            <div class="button-row">
-              <button id="connectBtn" class="primary">Connect BLE</button>
-              <button id="disconnectBtn" disabled>Disconnect</button>
-              <button id="resetBtn">Reset</button>
-            </div>
+  <div class="app">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1>Hit Pad BLE Grid</h1>
+        <p>Compact full-screen dashboard with no scrolling on desktop.</p>
+      </div>
+      <div id="connectionPill" class="status-pill">Disconnected</div>
+      <div id="statusText" class="small">Disconnected</div>
+      <div class="button-row">
+        <button id="connectBtn" class="primary">Connect BLE</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="panel grid-panel">
+        <div id="grid" class="grid"></div>
+        <div class="bottom-stats">
+          <div class="mini-card">
+            <div class="mini-label">Strongest zone</div>
+            <div id="strongestZone" class="mini-value">None</div>
           </div>
-        </div>
-        <div class="card-body">
-          <div id="grid" class="grid"></div>
+          <div class="mini-card">
+            <div class="mini-label">Last hit</div>
+            <div id="lastHit" class="mini-value">None</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Last raw packet</div>
+            <div id="lastPacket" class="mini-mono">No packets yet</div>
+          </div>
         </div>
       </section>
 
-      <aside class="stack">
-        <section class="card">
-          <div class="card-header"><h2>Connection</h2></div>
-          <div class="card-body">
-            <div class="status-row">
-              <span id="connectionPill" class="pill">Disconnected</span>
-              <span id="statusText">Disconnected</span>
-            </div>
-            <div id="errorBox" class="error-box" style="display:none; margin-top:14px;"></div>
-            <div class="info-box" style="margin-top:14px;">
-              Use Chrome or Edge with Web Bluetooth. Connect to the device named <strong>ESP32_HIT_PAD_BLE</strong>.
-            </div>
-          </div>
-        </section>
+      <aside class="panel side">
+        <div class="side-card">
+          <h2>Connection</h2>
+          <div id="errorBox" class="error-box"></div>
+          <div class="small">Use Chrome or Edge with Web Bluetooth. Connect to <strong>ESP32_HIT_PAD_BLE</strong>.</div>
+        </div>
 
-        <section class="card">
-          <div class="card-header"><h2>Live Stats</h2></div>
-          <div class="card-body stack">
-            <div class="info-box">
-              <div>Strongest zone</div>
-              <div id="strongestZone" class="stat-big">None</div>
-            </div>
-            <div class="info-box">
-              <div>Last hit packet</div>
-              <div id="lastHit" class="stat-big" style="font-size:20px;">None</div>
-            </div>
-            <div class="mono-box">
-              <div style="font-family: Arial, Helvetica, sans-serif; font-size:14px; margin-bottom:8px;">Last raw BLE packet</div>
-              <div id="lastPacket">No packets yet</div>
-            </div>
-          </div>
-        </section>
+        <div class="side-card">
+          <h2>Packets</h2>
+          <div class="mono-box">CSV,0,80,1450,120,0,0,30,650,0,0</div>
+          <div style="height:8px"></div>
+          <div class="mono-box">HIT,S3,1450</div>
+        </div>
 
-        <section class="card">
-          <div class="card-header"><h2>Expected BLE packets</h2></div>
-          <div class="card-body stack">
-            <div class="mono-box">CSV,0,80,1450,120,0,0,30,650,0,0</div>
-            <div class="mono-box">HIT,S3,1450</div>
-            <div class="info-box">The grid updates from the CSV line. The strongest zone updates from the highest value in the latest packet.</div>
-          </div>
-        </section>
+        <div class="side-card">
+          <h2>Notes</h2>
+          <div class="small">The grid updates from the CSV packet. The highlighted box is the strongest zone from the latest values.</div>
+        </div>
       </aside>
-    </div>
+    </main>
   </div>
 
   <script>
@@ -330,7 +375,6 @@
 
     let characteristic = null;
     let device = null;
-    let buffer = '';
     const decoder = new TextDecoder('utf-8');
 
     const gridEl = document.getElementById('grid');
@@ -356,7 +400,7 @@
 
     function setConnectionState(connected, text) {
       connectionPill.textContent = connected ? 'Connected' : 'Disconnected';
-      connectionPill.className = connected ? 'pill connected' : 'pill';
+      connectionPill.className = connected ? 'status-pill connected' : 'status-pill';
       statusText.textContent = text;
       connectBtn.disabled = connected;
       disconnectBtn.disabled = !connected;
@@ -389,16 +433,20 @@
 
         const cell = document.createElement('div');
         cell.className = strongest ? 'cell strongest' : 'cell';
-        cell.style.background = `rgba(59, 130, 246, ${opacity})`;
+        cell.style.background = `rgba(37, 99, 235, ${opacity})`;
 
         cell.innerHTML = `
-          <div class="cell-top">
-            <div class="cell-label">${labels[i]}</div>
-            ${strongest ? '<div class="badge">Strongest</div>' : ''}
+          <div>
+            <div class="cell-top">
+              <div class="cell-label">${labels[i]}</div>
+              ${strongest ? '<div class="badge">Strongest</div>' : ''}
+            </div>
+            <div class="cell-value">${value}</div>
           </div>
-          <div class="cell-value">${value}</div>
-          <div class="progress"><div class="progress-bar" style="width:${p}%"></div></div>
-          <div class="percent">${Math.round(p)}%</div>
+          <div>
+            <div class="progress"><div class="progress-bar" style="width:${p}%"></div></div>
+            <div class="percent">${Math.round(p)}%</div>
+          </div>
         `;
 
         gridEl.appendChild(cell);
@@ -407,8 +455,8 @@
       strongestZone.textContent = values[maxIdx] > 0 ? labels[maxIdx] : 'None';
     }
 
-    function handlePacket(line) {
-      const trimmed = line.trim();
+    function handlePacket(packet) {
+      const trimmed = packet.trim();
       if (!trimmed) return;
       lastPacket.textContent = trimmed;
 
@@ -428,11 +476,10 @@
     }
 
     function onNotification(event) {
-      const chunk = decoder.decode(event.target.value);
-      buffer += chunk;
-      const lines = buffer.split(/\r?\n/);
-      buffer = lines.pop() || '';
-      lines.forEach(handlePacket);
+      const packet = decoder.decode(event.target.value).trim();
+      if (packet) {
+        handlePacket(packet);
+      }
     }
 
     async function connectBLE() {
