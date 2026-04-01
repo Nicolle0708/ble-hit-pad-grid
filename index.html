@@ -369,7 +369,299 @@
 
     async function disconnectBLE() {
       try {
-        if (device && device.gatt && device.gatt.connected) {
+        if (device && device.gatt && device.gatt.connected) {<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLE Hit Pad Grid</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #dbe3ee;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --hit: #2563eb;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body { padding: 12px; }
+
+    .app {
+      height: calc(100vh - 24px);
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+    }
+
+    .topbar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1, .title-wrap p { margin: 0; }
+    .title-wrap h1 { font-size: 24px; }
+    .title-wrap p { margin-top: 4px; font-size: 13px; color: var(--muted); }
+
+    .rightbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .status-pill.connected {
+      background: rgba(22, 163, 74, 0.12);
+      color: #15803d;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .main {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 16px;
+    }
+
+    .square-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .square {
+      width: min(78vh, 100%, 760px);
+      aspect-ratio: 1;
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      padding: 12px;
+      background: #f8fafc;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .cell {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--accent-soft);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+
+    .cell.active {
+      background: var(--hit);
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .cell-label { font-size: 18px; }
+    .cell-count { font-size: 26px; }
+    .cell-percent { font-size: 12px; color: var(--muted); }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h1>Hit Pad BLE Grid</h1>
+        <p>S10→S6 (top) · S5→S1 (bottom)</p>
+      </div>
+      <div class="rightbar">
+        <div id="connectionPill" class="status-pill">Disconnected</div>
+        <button id="connectBtn" class="primary">Connect BLE</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="square-wrap">
+        <div id="square" class="square"></div>
+      </div>
+
+      <div>
+        <h2>Timer</h2>
+        <div id="timerDisplay">60</div>
+        <input id="timerInput" type="number" value="60" />
+        <br><br>
+        <button id="startBtn">Start</button>
+        <button id="stopBtn">Stop</button>
+        <button id="resetBtn">Reset</button>
+        <br><br>
+        <div>Total hits: <span id="totalHits">0</span></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+    const labels = ['S10','S9','S8','S7','S6','S5','S4','S3','S2','S1'];
+
+    let hitCounts = new Array(10).fill(0);
+    let totalHitCount = 0;
+    let sessionRunning = false;
+    let timeRemaining = 60;
+    let interval;
+    const decoder = new TextDecoder();
+
+    function buildGrid() {
+      const grid = document.getElementById('square');
+      grid.innerHTML = '';
+      labels.forEach((label, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = 'cell-'+i;
+        cell.innerHTML = `<div class='cell-label'>${label}</div>
+                          <div class='cell-count' id='count-${i}'>0</div>
+                          <div class='cell-percent' id='percent-${i}'>0%</div>`;
+        grid.appendChild(cell);
+      });
+    }
+
+    function updateUI() {
+      for (let i=0;i<10;i++) {
+        document.getElementById(`count-${i}`).textContent = hitCounts[i];
+        const percent = totalHitCount === 0 ? 0 : Math.round((hitCounts[i]/totalHitCount)*100);
+        document.getElementById(`percent-${i}`).textContent = percent + '%';
+      }
+      document.getElementById('totalHits').textContent = totalHitCount;
+    }
+
+    function flash(i) {
+      const cell = document.getElementById('cell-'+i);
+      cell.classList.add('active');
+      setTimeout(()=>cell.classList.remove('active'),200);
+    }
+
+    function handlePacket(packet) {
+      if (!sessionRunning) return;
+      if (packet.startsWith('HIT,')) {
+        const zone = packet.split(',')[1];
+        const index = labels.indexOf(zone);
+        if (index >= 0) {
+          hitCounts[index]++;
+          totalHitCount++;
+          updateUI();
+          flash(index);
+        }
+      }
+    }
+
+    function onNotification(e) {
+      const p = decoder.decode(e.target.value).trim();
+      if (p) handlePacket(p);
+    }
+
+    async function connectBLE() {
+      const device = await navigator.bluetooth.requestDevice({
+        filters:[{namePrefix:'ESP32'}],
+        optionalServices:[SERVICE_UUID]
+      });
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SERVICE_UUID);
+      const char = await service.getCharacteristic(TX_UUID);
+      await char.startNotifications();
+      char.addEventListener('characteristicvaluechanged', onNotification);
+      document.getElementById('connectionPill').textContent='Connected';
+    }
+
+    document.getElementById('connectBtn').onclick = connectBLE;
+
+    document.getElementById('startBtn').onclick = ()=>{
+      sessionRunning = true;
+      timeRemaining = parseInt(timerInput.value);
+      interval = setInterval(()=>{
+        timeRemaining--;
+        document.getElementById('timerDisplay').textContent=timeRemaining;
+        if(timeRemaining<=0){sessionRunning=false;clearInterval(interval);} 
+      },1000);
+    };
+
+    document.getElementById('stopBtn').onclick = ()=>{
+      sessionRunning=false;
+      clearInterval(interval);
+    };
+
+    document.getElementById('resetBtn').onclick = ()=>{
+      sessionRunning=false;
+      clearInterval(interval);
+      hitCounts.fill(0);
+      totalHitCount=0;
+      updateUI();
+    };
+
+    buildGrid();
+    updateUI();
+  </script>
+</body>
+</html>
+
           device.gatt.disconnect();
         }
       } finally {
