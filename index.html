@@ -136,8 +136,8 @@
     .grid {
       min-height: 0;
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      grid-template-rows: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(5, minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -426,8 +426,13 @@
       const maxIdx = strongestIndex();
       gridEl.innerHTML = '';
 
-      values.forEach((value, i) => {
+      for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 2; col++) {
+        const i = col === 0 ? row : row + 5;
+        const value = values[i];
+
         const p = percent(value);
+        const maxIdx = strongestIndex();
         const strongest = value > 0 && i === maxIdx;
         const opacity = Math.max(0.12, p / 100);
 
@@ -450,7 +455,8 @@
         `;
 
         gridEl.appendChild(cell);
-      });
+      }
+    }
 
       strongestZone.textContent = values[maxIdx] > 0 ? labels[maxIdx] : 'None';
     }
