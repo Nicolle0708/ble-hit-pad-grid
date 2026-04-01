@@ -12,10 +12,8 @@
       --muted: #475569;
       --line: #dbe3ee;
       --accent: #2563eb;
-      --accent-soft: rgba(37, 99, 235, 0.12);
-      --danger-bg: #fef2f2;
-      --danger-text: #b91c1c;
-      --ok: #16a34a;
+      --accent-soft: #dbeafe;
+      --hit: #2563eb;
       --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
       --radius: 18px;
     }
@@ -31,17 +29,15 @@
       color: var(--text);
     }
 
-    body {
-      padding: 12px;
-    }
+    body { padding: 12px; }
 
     .app {
       height: calc(100vh - 24px);
+      max-width: 1100px;
+      margin: 0 auto;
       display: grid;
       grid-template-rows: auto 1fr;
       gap: 12px;
-      max-width: 1400px;
-      margin: 0 auto;
     }
 
     .topbar {
@@ -50,40 +46,38 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 14px 16px;
-      display: grid;
-      grid-template-columns: 1.2fr auto auto auto;
-      gap: 12px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .title-wrap h1, .title-wrap p, h2, p { margin: 0; }
+    .title-wrap h1, .title-wrap p { margin: 0; }
     .title-wrap h1 { font-size: 24px; }
     .title-wrap p { margin-top: 4px; font-size: 13px; color: var(--muted); }
 
+    .rightbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .status-pill {
-      justify-self: start;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
       border-radius: 999px;
-      padding: 9px 12px;
+      padding: 8px 12px;
       font-size: 13px;
       font-weight: 700;
       background: #e2e8f0;
       color: #334155;
-      white-space: nowrap;
     }
 
     .status-pill.connected {
       background: rgba(22, 163, 74, 0.12);
-      color: var(--ok);
-    }
-
-    .button-row {
-      display: flex;
-      gap: 8px;
-      justify-self: end;
-      flex-wrap: wrap;
+      color: #15803d;
     }
 
     button {
@@ -94,13 +88,7 @@
       padding: 10px 14px;
       font-size: 14px;
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    }
-
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
     }
 
     button.primary {
@@ -109,150 +97,68 @@
       border-color: var(--accent);
     }
 
-    button:disabled { opacity: 0.55; cursor: not-allowed; }
-
-    .main {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: 12px;
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
-    .panel {
+    .main {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      min-height: 0;
-    }
-
-    .grid-panel {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      padding: 14px;
-      gap: 12px;
-    }
-
-    .grid {
+      padding: 16px;
       min-height: 0;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(5, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr 240px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .square-wrap {
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .square {
+      width: min(78vh, 100%, 700px);
+      aspect-ratio: 1 / 1;
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      padding: 12px;
+      background: #f8fafc;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 10px;
     }
 
     .cell {
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 14px;
+      border-radius: 16px;
       background: var(--accent-soft);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-      min-height: 0;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .cell.strongest {
-      outline: 3px solid #111827;
-      transform: scale(1.01);
-    }
-
-    .cell-top {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: clamp(18px, 2.2vw, 28px);
+      font-weight: 800;
+      color: #1e293b;
+      transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
     }
 
-    .cell-label {
-      font-size: 14px;
-      font-weight: 700;
-      color: #334155;
-    }
-
-    .badge {
-      font-size: 11px;
-      background: #111827;
+    .cell.active {
+      background: var(--hit);
       color: white;
-      border-radius: 999px;
-      padding: 4px 8px;
-      white-space: nowrap;
-    }
-
-    .cell-value {
-      margin-top: 10px;
-      font-size: clamp(24px, 3vw, 42px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-
-    .progress {
-      margin-top: 10px;
-      width: 100%;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.78);
-      overflow: hidden;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width 0.12s ease;
-    }
-
-    .percent {
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .bottom-stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .mini-card {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #f8fafc;
-      padding: 12px;
-      min-width: 0;
-    }
-
-    .mini-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .mini-value {
-      font-size: 24px;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .mini-mono {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      line-height: 1.35;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      transform: scale(1.02);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
     }
 
     .side {
-      padding: 14px;
       display: grid;
       grid-template-rows: auto auto 1fr;
-      gap: 10px;
+      gap: 12px;
       min-height: 0;
     }
 
@@ -263,49 +169,27 @@
       padding: 12px;
     }
 
-    .side-card h2 {
-      font-size: 16px;
+    .side-card h2, .side-card p { margin: 0; }
+    .side-card h2 { font-size: 16px; margin-bottom: 8px; }
+    .small { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .big { font-size: 26px; font-weight: 800; }
+    .mono { font-family: Consolas, Monaco, monospace; font-size: 12px; overflow-wrap: anywhere; }
+    .error-box {
+      display: none;
+      background: #fef2f2;
+      color: #b91c1c;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
       margin-bottom: 8px;
     }
 
-    .small {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .error-box {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-      border-radius: 12px;
-      padding: 10px;
-      font-size: 13px;
-      display: none;
-    }
-
-    .mono-box {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 12px;
-      overflow-wrap: anywhere;
-      line-height: 1.4;
-      background: #eef2ff;
-      border-radius: 12px;
-      padding: 10px;
-    }
-
-    @media (max-width: 1100px) {
-      .main { grid-template-columns: 1fr; }
-      .side { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; }
+    @media (max-width: 900px) {
       html, body { overflow: auto; }
       .app { height: auto; min-height: calc(100vh - 24px); }
-    }
-
-    @media (max-width: 900px) {
-      .topbar { grid-template-columns: 1fr; }
-      .button-row { justify-self: start; }
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; }
-      .bottom-stats { grid-template-columns: 1fr; }
-      .side { grid-template-columns: 1fr; }
+      .main { grid-template-columns: 1fr; }
+      .square { width: min(90vw, 700px); }
+      .side { grid-template-rows: none; }
     }
   </style>
 </head>
@@ -314,11 +198,10 @@
     <header class="topbar">
       <div class="title-wrap">
         <h1>Hit Pad BLE Grid</h1>
-        <p>Compact full-screen dashboard with no scrolling on desktop.</p>
+        <p>10 sections inside one square. A section lights up when it is hit.</p>
       </div>
-      <div id="connectionPill" class="status-pill">Disconnected</div>
-      <div id="statusText" class="small">Disconnected</div>
-      <div class="button-row">
+      <div class="rightbar">
+        <div id="connectionPill" class="status-pill">Disconnected</div>
         <button id="connectBtn" class="primary">Connect BLE</button>
         <button id="disconnectBtn" disabled>Disconnect</button>
         <button id="resetBtn">Reset</button>
@@ -326,41 +209,25 @@
     </header>
 
     <main class="main">
-      <section class="panel grid-panel">
-        <div id="grid" class="grid"></div>
-        <div class="bottom-stats">
-          <div class="mini-card">
-            <div class="mini-label">Strongest zone</div>
-            <div id="strongestZone" class="mini-value">None</div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-label">Last hit</div>
-            <div id="lastHit" class="mini-value">None</div>
-          </div>
-          <div class="mini-card">
-            <div class="mini-label">Last raw packet</div>
-            <div id="lastPacket" class="mini-mono">No packets yet</div>
-          </div>
-        </div>
-      </section>
+      <div class="square-wrap">
+        <div id="square" class="square"></div>
+      </div>
 
-      <aside class="panel side">
+      <aside class="side">
         <div class="side-card">
-          <h2>Connection</h2>
+          <h2>Status</h2>
           <div id="errorBox" class="error-box"></div>
-          <div class="small">Use Chrome or Edge with Web Bluetooth. Connect to <strong>ESP32_HIT_PAD_BLE</strong>.</div>
+          <p id="statusText" class="small">Disconnected</p>
         </div>
 
         <div class="side-card">
-          <h2>Packets</h2>
-          <div class="mono-box">CSV,0,80,1450,120,0,0,30,650,0,0</div>
-          <div style="height:8px"></div>
-          <div class="mono-box">HIT,S3,1450</div>
+          <h2>Last hit</h2>
+          <div id="lastHit" class="big">None</div>
         </div>
 
         <div class="side-card">
-          <h2>Notes</h2>
-          <div class="small">The grid updates from the CSV packet. The highlighted box is the strongest zone from the latest values.</div>
+          <h2>Last packet</h2>
+          <div id="lastPacket" class="mono">No packets yet</div>
         </div>
       </aside>
     </main>
@@ -369,21 +236,19 @@
   <script>
     const SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
     const TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+    const labels = ['S10','S9','S8','S7','S6','S5','S4','S3','S2','S1'];
 
-    const labels = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'];
-    let values = new Array(10).fill(0);
-
-    let characteristic = null;
     let device = null;
+    let values = new Array(10).fill(0);
+    let clearTimer = null;
     const decoder = new TextDecoder('utf-8');
 
-    const gridEl = document.getElementById('grid');
+    const square = document.getElementById('square');
     const connectBtn = document.getElementById('connectBtn');
     const disconnectBtn = document.getElementById('disconnectBtn');
     const resetBtn = document.getElementById('resetBtn');
     const connectionPill = document.getElementById('connectionPill');
     const statusText = document.getElementById('statusText');
-    const strongestZone = document.getElementById('strongestZone');
     const lastHit = document.getElementById('lastHit');
     const lastPacket = document.getElementById('lastPacket');
     const errorBox = document.getElementById('errorBox');
@@ -406,59 +271,32 @@
       disconnectBtn.disabled = !connected;
     }
 
-    function strongestIndex() {
-      let idx = 0;
-      for (let i = 1; i < values.length; i++) {
-        if (values[i] > values[idx]) idx = i;
-      }
-      return idx;
-    }
-
-    function maxValue() {
-      return Math.max(1000, ...values);
-    }
-
-    function percent(value) {
-      return Math.max(0, Math.min(100, (value / maxValue()) * 100));
-    }
-
-    function renderGrid() {
-      const maxIdx = strongestIndex();
-      gridEl.innerHTML = '';
-
-      for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 2; col++) {
-        const i = col === 0 ? row : row + 5;
-        const value = values[i];
-
-        const p = percent(value);
-        const maxIdx = strongestIndex();
-        const strongest = value > 0 && i === maxIdx;
-        const opacity = Math.max(0.12, p / 100);
-
+    function buildSquare() {
+      square.innerHTML = '';
+      labels.forEach((label, i) => {
         const cell = document.createElement('div');
-        cell.className = strongest ? 'cell strongest' : 'cell';
-        cell.style.background = `rgba(37, 99, 235, ${opacity})`;
+        cell.className = 'cell';
+        cell.id = `cell-${i}`;
+        cell.textContent = label;
+        square.appendChild(cell);
+      });
+    }
 
-        cell.innerHTML = `
-          <div>
-            <div class="cell-top">
-              <div class="cell-label">${labels[i]}</div>
-              ${strongest ? '<div class="badge">Strongest</div>' : ''}
-            </div>
-            <div class="cell-value">${value}</div>
-          </div>
-          <div>
-            <div class="progress"><div class="progress-bar" style="width:${p}%"></div></div>
-            <div class="percent">${Math.round(p)}%</div>
-          </div>
-        `;
-
-        gridEl.appendChild(cell);
+    function clearActiveCells() {
+      for (let i = 0; i < 10; i++) {
+        document.getElementById(`cell-${i}`)?.classList.remove('active');
       }
     }
 
-      strongestZone.textContent = values[maxIdx] > 0 ? labels[maxIdx] : 'None';
+    function flashStrongestCell(index) {
+      clearActiveCells();
+      const cell = document.getElementById(`cell-${index}`);
+      if (cell) cell.classList.add('active');
+
+      if (clearTimer) clearTimeout(clearTimer);
+      clearTimer = setTimeout(() => {
+        clearActiveCells();
+      }, 350);
     }
 
     function handlePacket(packet) {
@@ -470,22 +308,32 @@
         const parts = trimmed.split(',').slice(1).map(v => Number(v.trim()));
         if (parts.length === 10 && parts.every(Number.isFinite)) {
           values = parts;
-          renderGrid();
         }
         return;
       }
 
       if (trimmed.startsWith('HIT,')) {
-        const [, zone, value] = trimmed.split(',');
-        lastHit.textContent = `${zone} (${value})`;
+        const [, zone] = trimmed.split(',');
+        lastHit.textContent = zone;
+
+        const sensorOrder = ['S1','S2','S3','S4','S5','S6','S7','S8','S9','S10'];
+        const displayOrder = ['S10','S9','S8','S7','S6','S5','S4','S3','S2','S1'];
+        const hitIndex = displayOrder.indexOf(zone);
+        if (hitIndex >= 0) {
+          flashStrongestCell(hitIndex);
+        } else {
+          const fallbackIndex = sensorOrder.indexOf(zone);
+          if (fallbackIndex >= 0) {
+            const mapped = displayOrder.indexOf(sensorOrder[fallbackIndex]);
+            if (mapped >= 0) flashStrongestCell(mapped);
+          }
+        }
       }
     }
 
     function onNotification(event) {
       const packet = decoder.decode(event.target.value).trim();
-      if (packet) {
-        handlePacket(packet);
-      }
+      if (packet) handlePacket(packet);
     }
 
     async function connectBLE() {
@@ -508,7 +356,7 @@
         setConnectionState(false, 'Connecting...');
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(SERVICE_UUID);
-        characteristic = await service.getCharacteristic(TX_UUID);
+        const characteristic = await service.getCharacteristic(TX_UUID);
         await characteristic.startNotifications();
         characteristic.addEventListener('characteristicvaluechanged', onNotification);
 
@@ -534,14 +382,14 @@
       lastHit.textContent = 'None';
       lastPacket.textContent = 'No packets yet';
       clearError();
-      renderGrid();
+      clearActiveCells();
     }
 
     connectBtn.addEventListener('click', connectBLE);
     disconnectBtn.addEventListener('click', disconnectBLE);
     resetBtn.addEventListener('click', resetGrid);
 
-    renderGrid();
+    buildSquare();
   </script>
 </body>
 </html>
