@@ -168,7 +168,7 @@ void loop() {
     // Optional human-readable packet
     String summary = "HIT," + String(sensorNames[maxIndex]) + "," + String(peakValues[maxIndex]);
     notifyPacket(summary);
-  }
+  } 
 
   delay(50);
 }
